@@ -7,7 +7,7 @@
 
 import Foundation
 
-public actor VaultsCoreManager {
+public actor VaultsCoreManager: ObservableObject {
     private var vaults: [Vault] = []
     private let storage: VaultsStorage
     
