@@ -16,8 +16,11 @@ public actor VaultsCoreManager: ObservableObject {
     public init() {
         let storage = VaultsStorage()
         self.storage = storage
-        self.loadTask = Task {
+        loadTask = Task {
             await storage.load()
+        }
+        Task {
+            await ensureLoaded()
         }
     }
     
