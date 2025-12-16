@@ -10,10 +10,12 @@ import Foundation
 public actor VaultsCoreManager: ObservableObject {
     private var vaults: [Vault] = []
     private let storage: VaultsStorage
+    private let parentFolderURL: URL
     
     private var loadTask: Task<[Vault], Never>?
     
-    public init() {
+    public init(parentFolder: URL) {
+        self.parentFolderURL = parentFolder
         let storage = VaultsStorage()
         self.storage = storage
         loadTask = Task {
@@ -159,13 +161,16 @@ public actor VaultsCoreManager: ObservableObject {
     }
     
     // MARK: - Helper Methods
-    
-    private func createFolder(for id: UUID) throws {
-        let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        let folderURL = documentsDirectory.appendingPathComponent(id.uuidString)
-        
+    private func createFolder(
+        for id: UUID,
+    ) throws {
+        let folderURL = parentFolderURL.appendingPathComponent(id.uuidString, isDirectory: true)
+
         if !FileManager.default.fileExists(atPath: folderURL.path) {
-            try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true)
+            try FileManager.default.createDirectory(
+                at: folderURL,
+                withIntermediateDirectories: true
+            )
         }
     }
     
