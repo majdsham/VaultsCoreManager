@@ -12,6 +12,7 @@ public struct Vault: Codable, Identifiable, Sendable {
     public let creationDate: Date
     public var phoneNumber: String?
     public var passcode: String?
+    public var ableToOpenViaBiometric: Bool = false
     
     public init(id: UUID = UUID(), creationDate: Date = Date(), phoneNumber: String? = nil, passcode: String? = nil) {
         self.id = id

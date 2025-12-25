@@ -35,9 +35,22 @@ public actor VaultsCoreManager: ObservableObject {
     
     // MARK: - Core Functionality
     
-    public func addVault() async throws -> Vault {
+    /// Creates a new vault, optionally with a passcode.
+    /// - Parameter passcode: An optional string to secure the vault.
+    public func addVault(passcode: String? = nil) async throws -> Vault {
         await ensureLoaded()
-        let newVault = Vault()
+        
+        // Check passcode uniqueness if provided
+        if let passcode = passcode {
+            if !validatePasscodeUniqueness(passcode) {
+                throw VaultError.passcodeAlreadyExists
+            }
+        }
+        
+        var newVault = Vault()
+        newVault.passcode = passcode
+        // Default behavior: new standard vaults are not biometric-enabled by default
+        newVault.ableToOpenViaBiometric = false
         
         // Create folder
         try createFolder(for: newVault.id)
@@ -68,6 +81,49 @@ public actor VaultsCoreManager: ObservableObject {
         } catch {
             return .failure(error)
         }
+    }
+    
+    // MARK: - Biometric Vault Management
+    
+    /// Returns the single vault allowed to be opened via biometrics, if it exists.
+    public func getBiometricVault() -> Vault? {
+        return vaults.first(where: { $0.ableToOpenViaBiometric })
+    }
+    
+    /// Checks if a vault with biometric access currently exists.
+    public func doesBiometricVaultExist() -> Bool {
+        return vaults.contains(where: { $0.ableToOpenViaBiometric })
+    }
+    
+    /// Creates a vault with biometric capabilities enabled.
+    /// - Parameter passcode: Optional passcode for the vault.
+    /// - Returns: The created Vault, or nil if a biometric vault already exists.
+    public func createBiometricVault(passcode: String? = nil) async throws -> Vault? {
+        await ensureLoaded()
+        
+        // Enforce Single Biometric Vault Rule
+        if doesBiometricVaultExist() {
+            return nil
+        }
+        
+        // Check passcode uniqueness if provided
+        if let passcode = passcode {
+            if !validatePasscodeUniqueness(passcode) {
+                throw VaultError.passcodeAlreadyExists
+            }
+        }
+        
+        var newVault = Vault()
+        newVault.passcode = passcode
+        newVault.ableToOpenViaBiometric = true
+        
+        // Create folder
+        try createFolder(for: newVault.id)
+        
+        vaults.append(newVault)
+        try await storage.save(vaults)
+        
+        return newVault
     }
     
     // MARK: - Passcode Management
