@@ -7,10 +7,11 @@
 
 import Foundation
 
-public actor VaultsCoreManager: ObservableObject {
+@MainActor
+public final class VaultsCoreManager: ObservableObject {
     private var vaults: [Vault] = []
     private let storage: VaultsStorage
-    private let parentFolderURL: URL
+    private(set) var parentFolderURL: URL
     
     private var loadTask: Task<[Vault], Never>?
     
