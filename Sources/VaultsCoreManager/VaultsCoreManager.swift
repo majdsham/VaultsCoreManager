@@ -133,7 +133,7 @@ public final class VaultsCoreManager: ObservableObject {
         return vaults.first(where: { $0.passcode == passcode })
     }
     
-    public func setPasscode(id: UUID, new: String) async -> Result<Void, Error> {
+    public func setPasscode(id: UUID, new: String) async -> Result<Vault, Error> {
         await ensureLoaded()
         guard let index = vaults.firstIndex(where: { $0.id == id }) else {
             return .failure(VaultError.vaultNotFound)
@@ -150,7 +150,7 @@ public final class VaultsCoreManager: ObservableObject {
         
         do {
             try await storage.save(vaults)
-            return .success(())
+            return .success(vault)
         } catch {
             return .failure(error)
         }
