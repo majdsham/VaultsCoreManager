@@ -11,8 +11,8 @@ actor VaultsStorage {
     private let fileName = "vaults.json"
     
     private var fileURL: URL {
-        let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        return documentsDirectory.appendingPathComponent(fileName)
+        let documentsDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        return documentsDirectory.appendingPathComponent("VaultData").appendingPathComponent(fileName)
     }
     
     func save(_ vaults: [Vault]) throws {
